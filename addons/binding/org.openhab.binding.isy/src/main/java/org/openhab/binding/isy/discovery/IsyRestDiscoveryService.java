@@ -121,7 +121,7 @@ public class IsyRestDiscoveryService extends AbstractDiscoveryService {
             properties.put(IsyProgramConfiguration.NAME, program.getName());
 
             ThingTypeUID theThingTypeUid = IsyBindingConstants.PROGRAM_THING_TYPE;
-            String thingID = removeInvalidUidChars(program.getName());
+            String thingID = removeInvalidUidChars(program.getId());
             ThingUID thingUID = new ThingUID(theThingTypeUid, bridgeUID, thingID);
             DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withBridge(bridgeUID)
                     .withProperties(properties).withBridge(bridgeUID).withLabel(program.getName()).build();
@@ -133,7 +133,7 @@ public class IsyRestDiscoveryService extends AbstractDiscoveryService {
     }
 
     private static String removeInvalidUidChars(String original) {
-        return original.replace(" ", "").replaceAll("\\.", "").replace(",", "_").replaceAll("-", "_");
+        return original.replace(" ", "_");
     }
 
     private void discoverScenes() {
@@ -147,7 +147,7 @@ public class IsyRestDiscoveryService extends AbstractDiscoveryService {
             properties.put(IsyInsteonDeviceConfiguration.NAME, scene.name);
 
             ThingTypeUID theThingTypeUid = IsyBindingConstants.SCENE_THING_TYPE;
-            String thingID = removeInvalidUidChars(scene.name);
+            String thingID = removeInvalidUidChars(scene.address);
             ThingUID thingUID = new ThingUID(theThingTypeUid, bridgeUID, thingID);
             DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withBridge(bridgeUID)
                     .withProperties(properties).withBridge(bridgeUID).withLabel(scene.name).build();
@@ -209,7 +209,7 @@ public class IsyRestDiscoveryService extends AbstractDiscoveryService {
                     theThingTypeUid = IsyBindingConstants.UNRECOGNIZED_SWITCH_THING_TYPE;
                 }
 
-                String thingID = removeInvalidUidChars(node.getName());
+                String thingID = removeInvalidUidChars(nodeAddress.toStringNoDeviceId());
                 ThingUID thingUID = new ThingUID(theThingTypeUid, bridgeUID, thingID);
                 DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withBridge(bridgeUID)
                         .withProperties(properties).withBridge(bridgeUID).withLabel(node.getName()).build();

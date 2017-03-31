@@ -4,7 +4,7 @@ Bundle-Name: Isy Binding
 Bundle-SymbolicName: org.openhab.binding.isy;singleton:=true
 Bundle-Vendor: openHAB
 Bundle-Version: 2.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
  lib/websocket-api-9.2.14.v20151106.jar,
  lib/websocket-common-9.2.14.v20151106.jar,
