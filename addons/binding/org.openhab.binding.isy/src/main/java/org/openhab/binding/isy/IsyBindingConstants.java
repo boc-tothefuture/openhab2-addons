@@ -39,6 +39,8 @@ public class IsyBindingConstants {
     public final static ThingTypeUID KEYPADLINC_8_THING_TYPE = new ThingTypeUID(BINDING_ID, "keypadlinc8");
     public final static ThingTypeUID INLINELINC_SWITCH_THING_TYPE = new ThingTypeUID(BINDING_ID, "inlinelincswitch");
     public final static ThingTypeUID OUTLETLINC_DIMMER_THING_TYPE = new ThingTypeUID(BINDING_ID, "outletlinc");
+    public final static ThingTypeUID OUTLETLINC_DUAL_THING_TYPE = new ThingTypeUID(BINDING_ID, "dualoutletlinc");
+
     public final static ThingTypeUID TRIGGERLINC_THING_TYPE = new ThingTypeUID(BINDING_ID, "triggerlinc");
     public final static ThingTypeUID TOGGLELINC_THING_TYPE = new ThingTypeUID(BINDING_ID, "togglelinc");
     public final static ThingTypeUID HIDDENDOORSENSOR_THING_TYPE = new ThingTypeUID(BINDING_ID, "hiddendoorsensor");

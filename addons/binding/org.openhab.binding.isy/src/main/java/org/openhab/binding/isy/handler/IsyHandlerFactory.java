@@ -42,7 +42,7 @@ public class IsyHandlerFactory extends BaseThingHandlerFactory {
             GARAGEDOORKIT_THING_TYPE, KEYPAD_LINC_6_THING_TYPE, KEYPAD_LINC_5_THING_TYPE, REMOTELINC_8_THING_TYPE,
             INLINELINC_SWITCH_THING_TYPE, PROGRAM_THING_TYPE, VARIABLE_THING_TYPE, SCENE_THING_TYPE,
             UNRECOGNIZED_SWITCH_THING_TYPE, KEYPADLINC_8_THING_TYPE, OUTLETLINC_DIMMER_THING_TYPE,
-            TRIGGERLINC_THING_TYPE, TOGGLELINC_THING_TYPE, HIDDENDOORSENSOR_THING_TYPE);
+            TRIGGERLINC_THING_TYPE, TOGGLELINC_THING_TYPE, HIDDENDOORSENSOR_THING_TYPE, OUTLETLINC_DUAL_THING_TYPE);
 
     private Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegistrations = new HashMap<ThingUID, ServiceRegistration<?>>();
 
@@ -62,6 +62,9 @@ public class IsyHandlerFactory extends BaseThingHandlerFactory {
             return new SceneHandler(thing);
         } else if (thingTypeUID.equals(VARIABLE_THING_TYPE)) {
             return new IsyVariableHandler(thing);
+        } else if (thingTypeUID.equals(OUTLETLINC_DUAL_THING_TYPE)) {
+            return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_SWITCH, 1)
+                    .addChannelforDeviceId(CHANNEL_SWITCH, 2).build();
         } else if (thingTypeUID.equals(MOTION_THING_TYPE)) {
             return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_MOTION_MOTION, 1)
                     .addChannelforDeviceId(CHANNEL_MOTION_DUSK, 2).addChannelforDeviceId(CHANNEL_MOTION_BATTERY, 3)

@@ -310,6 +310,31 @@
             </parameter>
         </config-description>
     </thing-type>
+    <thing-type id="dualoutletlinc">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="ipbridge" />
+        </supported-bridge-type-refs>
+        <label>Dual Outlook Linc</label>
+        <description>Dual Outlook Linc</description>
+        <channels>
+            <channel id="loadlevel1" typeId="loadLevel" />
+            <channel id="loadlevel2" typeId="loadLevel" />
+        </channels>
+        <config-description>
+            <parameter name="address" type="text" required="true">
+                <label>Insteon Address</label>
+                <description>Insteon Address of device.</description>
+            </parameter>
+            <parameter name="name" type="text" required="true">
+                <label>Name</label>
+                <description>Text description of device.</description>
+            </parameter>
+            <parameter name="deviceid" type="text" readOnly="true">
+                <label>Device Id</label>
+                <description>Insteon device ID.</description>
+            </parameter>
+        </config-description>
+    </thing-type>
 	<thing-type id="inlinelincswitch">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="ipbridge" />
