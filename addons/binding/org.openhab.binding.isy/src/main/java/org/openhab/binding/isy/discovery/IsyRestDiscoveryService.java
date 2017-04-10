@@ -61,6 +61,9 @@ public class IsyRestDiscoveryService extends AbstractDiscoveryService {
         mMapDeviceTypeThingType.put("02.38", IsyBindingConstants.SWITCH_THING_TYPE);
         mMapDeviceTypeThingType.put("04.10", IsyBindingConstants.SWITCH_THING_TYPE);
         mMapDeviceTypeThingType.put("02.2F", IsyBindingConstants.SWITCH_THING_TYPE);
+        mMapDeviceTypeThingType.put("02.14", IsyBindingConstants.SWITCH_THING_TYPE);
+        mMapDeviceTypeThingType.put("02.15", IsyBindingConstants.SWITCH_THING_TYPE);
+        mMapDeviceTypeThingType.put("02.2F", IsyBindingConstants.SWITCH_THING_TYPE);
         mMapDeviceTypeThingType.put("10.08", IsyBindingConstants.LEAKDETECTOR_THING_TYPE);
         mMapDeviceTypeThingType.put("01.1B", IsyBindingConstants.KEYPAD_LINC_6_THING_TYPE);
         mMapDeviceTypeThingType.put("01.41", IsyBindingConstants.KEYPADLINC_8_THING_TYPE);
