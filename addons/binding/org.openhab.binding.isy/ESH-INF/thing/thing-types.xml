@@ -261,6 +261,32 @@
             </parameter>
 		</config-description>
 	</thing-type>
+	<thing-type id="fanlinc">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="ipbridge" />
+        </supported-bridge-type-refs>
+        <label>Fanlinc</label>
+        <description>Fanlinc</description>
+        <channels>
+            <channel id="load" typeId="loadLevel" />
+            <channel id="load2" typeId="loadLevel" />
+            <channel id="paddleaction" typeId="paddleAction" />
+        </channels>
+        <config-description>
+            <parameter name="address" type="text" required="true">
+                <label>Insteon Address</label>
+                <description>Insteon Address of device.</description>
+            </parameter>
+            <parameter name="name" type="text" required="true">
+                <label>Name</label>
+                <description>Text description of device.</description>
+            </parameter>
+            <parameter name="deviceid" type="text" readOnly="true">
+                <label>Device Id</label>
+                <description>Insteon device ID.</description>
+            </parameter>
+        </config-description>
+    </thing-type>
 	<thing-type id="switch">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="ipbridge" />

@@ -42,7 +42,8 @@ public class IsyHandlerFactory extends BaseThingHandlerFactory {
             GARAGEDOORKIT_THING_TYPE, KEYPAD_LINC_6_THING_TYPE, KEYPAD_LINC_5_THING_TYPE, REMOTELINC_8_THING_TYPE,
             INLINELINC_SWITCH_THING_TYPE, PROGRAM_THING_TYPE, VARIABLE_THING_TYPE, SCENE_THING_TYPE,
             UNRECOGNIZED_SWITCH_THING_TYPE, KEYPADLINC_8_THING_TYPE, OUTLETLINC_DIMMER_THING_TYPE,
-            TRIGGERLINC_THING_TYPE, TOGGLELINC_THING_TYPE, HIDDENDOORSENSOR_THING_TYPE, OUTLETLINC_DUAL_THING_TYPE);
+            TRIGGERLINC_THING_TYPE, TOGGLELINC_THING_TYPE, HIDDENDOORSENSOR_THING_TYPE, OUTLETLINC_DUAL_THING_TYPE,
+            FANLINC_THING_TYPE);
 
     private Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegistrations = new HashMap<ThingUID, ServiceRegistration<?>>();
 
@@ -95,6 +96,9 @@ public class IsyHandlerFactory extends BaseThingHandlerFactory {
         } else if (thingTypeUID.equals(DIMMER_THING_TYPE)) {
             return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_DIMMERLEVEL, 1)
                     .addControlChannel(CHANNEL_PADDLEACTION).build();
+        } else if (thingTypeUID.equals(FANLINC_THING_TYPE)) {
+            return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_DIMMERLEVEL, 1)
+                    .addChannelforDeviceId(CHANNEL_DIMMERLEVEL, 2).addControlChannel(CHANNEL_PADDLEACTION).build();
         } else if (thingTypeUID.equals(KEYPAD_LINC_6_THING_TYPE) || thingTypeUID.equals(KEYPAD_LINC_5_THING_TYPE)) {
             return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_DIMMERLEVEL, 1)
                     .addChannelforDeviceId(CHANNEL_KEYPAD_LINC_A, 3).addChannelforDeviceId(CHANNEL_KEYPAD_LINC_B, 4)
