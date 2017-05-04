@@ -47,7 +47,7 @@ public class IsyRestDiscoveryService extends AbstractDiscoveryService {
         mMapDeviceTypeThingType.put("01.19", IsyBindingConstants.DIMMER_THING_TYPE);
         mMapDeviceTypeThingType.put("21.12", IsyBindingConstants.DIMMER_THING_TYPE);
         mMapDeviceTypeThingType.put("01.1F", IsyBindingConstants.DIMMER_THING_TYPE);
-        mMapDeviceTypeThingType.put("01.2E", IsyBindingConstants.DIMMER_THING_TYPE);
+        mMapDeviceTypeThingType.put("01.2E", IsyBindingConstants.FANLINC_THING_TYPE);
         mMapDeviceTypeThingType.put("01.3A", IsyBindingConstants.DIMMER_THING_TYPE);
         mMapDeviceTypeThingType.put("07.00", IsyBindingConstants.GARAGEDOORKIT_THING_TYPE);
         mMapDeviceTypeThingType.put("10.02", IsyBindingConstants.TRIGGERLINC_THING_TYPE);
