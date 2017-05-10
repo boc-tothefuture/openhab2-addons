@@ -90,4 +90,6 @@ public class IsyBindingConstants {
     public final static String CHANNEL_OPEN_SENSOR = "open_sensor";
     public final static String CHANNEL_CLOSED_SENSOR = "closed_sensor";
 
+    public final static String CHANNEL_LOAD = "load";
+    public final static String CHANNEL_LOAD2 = "load2";
 }

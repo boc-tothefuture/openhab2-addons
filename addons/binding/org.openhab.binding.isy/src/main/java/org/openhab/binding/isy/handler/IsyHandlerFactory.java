@@ -97,8 +97,8 @@ public class IsyHandlerFactory extends BaseThingHandlerFactory {
             return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_DIMMERLEVEL, 1)
                     .addControlChannel(CHANNEL_PADDLEACTION).build();
         } else if (thingTypeUID.equals(FANLINC_THING_TYPE)) {
-            return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_DIMMERLEVEL, 1)
-                    .addChannelforDeviceId(CHANNEL_DIMMERLEVEL, 2).addControlChannel(CHANNEL_PADDLEACTION).build();
+            return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_LOAD, 1)
+                    .addChannelforDeviceId(CHANNEL_LOAD2, 2).addControlChannel(CHANNEL_PADDLEACTION).build();
         } else if (thingTypeUID.equals(KEYPAD_LINC_6_THING_TYPE) || thingTypeUID.equals(KEYPAD_LINC_5_THING_TYPE)) {
             return IsyHandlerBuilder.builder(thing).addChannelforDeviceId(CHANNEL_DIMMERLEVEL, 1)
                     .addChannelforDeviceId(CHANNEL_KEYPAD_LINC_A, 3).addChannelforDeviceId(CHANNEL_KEYPAD_LINC_B, 4)
