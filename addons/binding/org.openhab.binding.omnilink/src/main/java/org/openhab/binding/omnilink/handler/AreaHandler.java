@@ -125,6 +125,11 @@ public class AreaHandler extends AbstractOmnilinkHandler {
         logger.debug("handle area event: mode:{} alarms:{} entryTimer:{} exitTimer:{}", status.getMode(),
                 status.getAlarms(), status.getEntryTimer(), status.getExitTimer());
 
+        // ignore entry timer values - they shouldn't change state.
+        if (status.getEntryTimer() > 0) {
+            return;
+        }
+
         /*
          * According to the spec, if the 3rd bit is set on a area mode, then that mode is in a delayed state.
          * Unfortunately, this is not the case, but we can fix that by looking to see if the exit timer
