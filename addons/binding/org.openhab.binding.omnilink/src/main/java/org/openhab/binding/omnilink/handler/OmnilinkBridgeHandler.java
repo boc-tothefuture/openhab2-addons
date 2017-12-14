@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.smarthome.core.library.types.DateTimeType;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -69,7 +70,8 @@ public class OmnilinkBridgeHandler extends BaseBridgeHandler implements Notifica
     private Connection omniConnection;
     private TemperatureFormat temperatureFormat;
     private Optional<AudioPlayer> audioPlayer = Optional.empty();
-    private DisconnectListener retryingDisconnectListener;
+    private Optional<EventLogPoller> eventLogPoller = Optional.empty();
+    private final DisconnectListener retryingDisconnectListener;
 
     public OmnilinkBridgeHandler(Bridge bridge) {
         super(bridge);
@@ -217,13 +219,19 @@ public class OmnilinkBridgeHandler extends BaseBridgeHandler implements Notifica
                         omniConnection = new Connection(config.getIpAddress(), config.getPort(),
                                 config.getKey1() + ":" + config.getKey2());
                         temperatureFormat = TemperatureFormat.valueOf(reqSystemFormats().getTempFormat());
-                        // HAI only supports one audio player - cycle through features until we find a featue that is an
+                        // HAI only supports one audio player - cycle through features until we find a feature that is
+                        // an
                         // audio player.
                         audioPlayer = reqSystemFeatures().getFeatures().stream()
                                 .map(featureCode -> AudioPlayer.getAudioPlayerForFeatureCode(featureCode))
                                 .filter(Optional::isPresent).findFirst().orElse(Optional.empty());
 
                         temperatureFormat = TemperatureFormat.valueOf(reqSystemFormats().getTempFormat());
+
+                        if (config.getLogPollingSeconds() > 0) {
+                            eventLogPoller = Optional
+                                    .of(new EventLogPoller(OmnilinkBridgeHandler.this, config.getLogPollingSeconds()));
+                        }
 
                         omniConnection.addNotificationListener(OmnilinkBridgeHandler.this);
                         omniConnection.addDisconnectListener(retryingDisconnectListener);
@@ -474,6 +482,9 @@ public class OmnilinkBridgeHandler extends BaseBridgeHandler implements Notifica
             omniConnection.disconnect();
         }
         AudioSourceHandler.shutdownExecutor();
+        if (eventLogPoller.isPresent()) {
+            eventLogPoller.get().shutdown();
+        }
     }
 
     private Optional<Thing> getChildThing(ThingTypeUID type, int number) {
@@ -497,6 +508,28 @@ public class OmnilinkBridgeHandler extends BaseBridgeHandler implements Notifica
 
     public Optional<AudioPlayer> getAudioPlayer() {
         return audioPlayer;
+    }
+
+    public Message reqEventLogData(int eventNumber, int direction)
+            throws OmniInvalidResponseException, OmniUnknownMessageTypeException, BridgeOfflineException {
+        try {
+            return omniConnection.uploadEventLogData(eventNumber, direction);
+        } catch (OmniNotConnectedException | IOException e) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, e.getMessage());
+            throw new BridgeOfflineException(e);
+        }
+
+    }
+
+    /**
+     * Post a new event log message
+     *
+     * @param json Message in json format to post
+     */
+    public void eventLogMessage(String json) {
+        logger.debug("Receieved event log message: {}", json);
+        updateState(OmnilinkBindingConstants.CHANNEL_EVENT_LOG, new StringType(json));
+
     }
 
 }

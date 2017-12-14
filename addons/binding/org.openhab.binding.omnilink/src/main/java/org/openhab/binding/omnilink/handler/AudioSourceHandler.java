@@ -37,7 +37,7 @@ public class AudioSourceHandler extends AbstractOmnilinkHandler {
 
     private static synchronized void startExecutor() {
         if (executorService.isShutdown()) {
-            logger.debug("Starting  audio polling executor service");
+            logger.debug("Starting audio polling executor service");
             executorService = Executors.newSingleThreadScheduledExecutor();
         }
     }

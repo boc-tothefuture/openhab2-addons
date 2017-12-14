@@ -11,6 +11,15 @@ public class OmnilinkBridgeConfig {
     private String key2;
     private String ipAddress;
     private int port;
+    private int logPollingSeconds;
+
+    public int getLogPollingSeconds() {
+        return logPollingSeconds;
+    }
+
+    public void setLogPollingSeconds(int logPollingSeconds) {
+        this.logPollingSeconds = logPollingSeconds;
+    }
 
     public String getKey1() {
         return key1;
