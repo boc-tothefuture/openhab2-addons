@@ -67,6 +67,7 @@ public class OmnilinkBindingConstants {
 
     public final static String CHANNEL_FLAGSWITCH = "switch";
     public final static String CHANNEL_SYSTEMDATE = "sysdate";
+    public final static String CHANNEL_EVENT_LOG = "last_log";
 
     // buttons
 

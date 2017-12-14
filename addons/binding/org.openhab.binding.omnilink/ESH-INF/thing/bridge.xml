@@ -15,6 +15,10 @@
                 <label>ALL Console Beep</label>
                 <description>Send console beep command to all consoles</description>
             </channel>
+            <channel id="last_log" typeId="last_log">
+                <label>Last log message</label>
+                <description>Last log message on the Omni. Represented in JSON. For example {"eventNumber":7720,"timeDataValid":true,"month":12,"day":14,"hour":8,"minute":49,"eventType":5,"parameter1":255,"parameter2":24}</description>
+            </channel>
             <channel id="phone_line_event" typeId="phone_line_event" />
             <channel id="ac_power_event" typeId="ac_power_event" />
             <channel id="battery_event" typeId="battery_event" />
@@ -35,7 +39,7 @@
 				<label>IP or Host Name</label>
 				<description>The IP or host name of the Omnilink Controller</description>
 			</parameter>
-			<parameter name="port" type="decimal" required="true">
+			<parameter name="port" type="integer" required="true">
 				<context>network-port</context>
 				<label>Port</label>
 				<description>The port of the Omnilink Controller</description>
@@ -49,6 +53,11 @@
 				<label>Key 2</label>
 				<description>The second key</description>
 			</parameter>
+			<parameter name="logPollingSeconds" type="integer" required="true">
+                <label>Interval to poll logs</label>
+                <description>Interval to poll for new log messages on the omni controller</description>
+                <default>1</default>
+            </parameter>
 		</config-description>
 	</bridge-type>
 	
@@ -59,6 +68,11 @@
         <label>System Time</label>
         <description>The date/time of omnilink last time received system status</description>
         <!-- <state readOnly="true" /> pattern="%1$tF %1$tR" -->
+    </channel-type>
+        <channel-type id="last_log">
+        <item-type>String</item-type>
+        <label>Last log entry in the OmniController</label>
+        <description>Last log message on the Omni. Represented in JSON.</description>
     </channel-type>
     <channel-type id="phone_line_event">
         <kind>trigger</kind>
