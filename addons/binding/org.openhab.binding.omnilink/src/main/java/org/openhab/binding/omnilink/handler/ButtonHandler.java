@@ -2,11 +2,11 @@ package org.openhab.binding.omnilink.handler;
 
 import java.util.Optional;
 
+import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
-import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.omnilink.OmnilinkBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class ButtonHandler extends AbstractOmnilinkStatusHandler {
                 int buttonNumber = getThingNumber();
                 logger.debug("Executing Button (macro) {}", buttonNumber);
                 getOmnilinkBridgeHander().sendOmnilinkCommand(CommandMessage.CMD_BUTTON, 0, buttonNumber);
-                updateState(OmnilinkBindingConstants.CHANNEL_BUTTON_PRESS, UnDefType.UNDEF);
+                updateState(OmnilinkBindingConstants.CHANNEL_BUTTON_PRESS, OnOffType.OFF);
             } catch (OmniInvalidResponseException | OmniUnknownMessageTypeException | BridgeOfflineException e) {
                 logger.debug("Could not send command to omnilink: {}", e);
             }
