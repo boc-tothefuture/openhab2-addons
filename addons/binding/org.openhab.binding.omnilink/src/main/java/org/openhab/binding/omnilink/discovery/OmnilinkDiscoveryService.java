@@ -241,7 +241,7 @@ public class OmnilinkDiscoveryService extends AbstractDiscoveryService {
             for (ThermostatProperties thermostatProperties : objectPropertyRequest) {
 
                 ThingUID thingUID = new ThingUID(OmnilinkBindingConstants.THING_TYPE_THERMOSTAT,
-                        Integer.toString(thermostatProperties.getNumber()));
+                        bridgeHandler.getThing().getUID(), Integer.toString(thermostatProperties.getNumber()));
 
                 Map<String, Object> properties = new HashMap<>();
                 properties.put(OmnilinkBindingConstants.THING_PROPERTIES_NUMBER, thermostatProperties.getNumber());
