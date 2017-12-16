@@ -356,6 +356,9 @@ public class OmnilinkDiscoveryService extends AbstractDiscoveryService {
                         thingUID = new ThingUID(OmnilinkBindingConstants.THING_TYPE_FLAG,
                                 bridgeHandler.getThing().getUID(), thingID);
 
+                    } else if (unitProperties.getUnitType() == UnitProperties.UNIT_TYPE_OUTPUT) {
+                        thingUID = new ThingUID(OmnilinkBindingConstants.THING_TYPE_OUTPUT,
+                                bridgeHandler.getThing().getUID(), thingID);
                     } else {
                         if (unitProperties.getUnitType() == UnitProperties.UNIT_TYPE_UPB
                                 || unitProperties.getUnitType() == UnitProperties.UNIT_TYPE_HLC_LOAD) {

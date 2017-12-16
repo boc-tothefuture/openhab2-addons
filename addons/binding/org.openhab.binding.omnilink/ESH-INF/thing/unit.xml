@@ -169,6 +169,26 @@
 		</config-description>
 	</thing-type>
 	
+	<thing-type id="output">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="controller" />
+        </supported-bridge-type-refs>
+        <label>Output</label>
+        <description>Omni voltage output</description>
+        <channels>
+           <channel id="switch" typeId="outputswitch" />
+        </channels>
+        <properties>
+            <property name="name" />
+        </properties>
+        <config-description>
+            <parameter name="number" type="integer" required="true">
+                <label>Output Number</label>
+                <description>Unit number of the output.</description>
+            </parameter>
+        </config-description>
+    </thing-type>
+	
 	<thing-type id="room">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="controller" />
@@ -273,7 +293,13 @@
     <channel-type id="flagswitch">
         <item-type>Switch</item-type>
         <label>On/Off</label>
-        <description>Flag Switch information</description>
+        <description>Flag Switch state</description>
+        <category>Switch</category>
+    </channel-type>
+        <channel-type id="outputswitch">
+        <item-type>Switch</item-type>
+        <label>On/Off</label>
+        <description>Output state</description>
         <category>Switch</category>
     </channel-type>
     

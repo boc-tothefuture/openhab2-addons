@@ -65,6 +65,8 @@ public class OmnilinkBindingConstants {
     public final static String CHANNEL_ROOM_SCENE_D = "scene_d";
     public final static String CHANNEL_ROOM_STATE = "state";
 
+    public final static String CHANNEL_OUTPUT_SWITCH = "switch";
+
     public final static String CHANNEL_FLAGSWITCH = "switch";
     public final static String CHANNEL_SYSTEMDATE = "sysdate";
     public final static String CHANNEL_EVENT_LOG = "last_log";
@@ -141,6 +143,7 @@ public class OmnilinkBindingConstants {
     public final static ThingTypeUID THING_TYPE_UNIT_UPB = new ThingTypeUID(BINDING_ID, "upb");
     public final static ThingTypeUID THING_TYPE_UNIT = new ThingTypeUID(BINDING_ID, "unit");
     public final static ThingTypeUID THING_TYPE_FLAG = new ThingTypeUID(BINDING_ID, "flag");
+    public static final ThingTypeUID THING_TYPE_OUTPUT = new ThingTypeUID(BINDING_ID, "output");
     public final static ThingTypeUID THING_TYPE_ROOM = new ThingTypeUID(BINDING_ID, "room");
     public final static ThingTypeUID THING_TYPE_BUTTON = new ThingTypeUID(BINDING_ID, "button");
     public final static ThingTypeUID THING_TYPE_THERMOSTAT = new ThingTypeUID(BINDING_ID, "thermostat");
