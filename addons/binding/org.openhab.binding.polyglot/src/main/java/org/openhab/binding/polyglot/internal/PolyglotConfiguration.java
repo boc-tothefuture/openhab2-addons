@@ -8,15 +8,47 @@
  */
 package org.openhab.binding.polyglot.internal;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+
 /**
  * The {@link PolyglotConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Brian OConnell - Initial contribution
  */
 public class PolyglotConfiguration {
+    public String mqttHostname;
 
-    /**
-     * Sample configuration parameter. Replace with your own.
-     */
-    public String config1;
+    public String mqttPort;
+
+    public String mqttUrl;
+
+    public String polygotEnvPrefix;
+
+    public ImmutableList<String> getContainerEnv() {
+
+        // Create a map, remove all null and empty values,
+        Map<String, String> envMap = Maps.newHashMap();
+        envMap.put(polygotEnvPrefix + "MQTT_HOSTNAME", mqttHostname);
+        envMap.put(polygotEnvPrefix + "MQTT_PORT", mqttPort);
+        envMap.put(polygotEnvPrefix + "MQTT_URL", mqttUrl);
+
+        envMap = envMap.entrySet().stream()
+
+                .filter(e -> Objects.nonNull(e.getValue()))
+
+                .filter(e -> !e.getValue().isEmpty())
+
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        List<String> env = envMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.toList());
+
+        return ImmutableList.copyOf(env);
+    }
 }

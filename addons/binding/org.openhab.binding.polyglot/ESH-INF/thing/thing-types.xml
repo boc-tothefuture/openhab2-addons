@@ -5,28 +5,75 @@
 	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
 	<!-- Sample Thing Type -->
-	<thing-type id="sample">
-		<label>Polyglot Binding Thing</label>
-		<description>Sample thing for Polyglot Binding</description>
+	<bridge-type id="containers">
+		<label>Polyglot Container Bridge</label>
+		<description>Bridge for managing containers with dynamic discovery of things</description>
+		
+		 <config-description>
+		   <parameter name="mqttHostname" type="text" required="false">
+           <label>MQTT Hostname</label>
+           <description>Hostname of ip address of MQTT server to supply to containers</description>
+           <context>network-address</context>
+         </parameter>
+          <parameter name="mqttPort" type="integer" required="false">
+           <label>MQTT Hostname</label>
+           <description>Hostname of ip address of MQTT server to supply to containers</description>
+           <context>network-address</context>
+           <default>1883</default> 
+         </parameter>
+         <parameter name="mqttUrl" type="text" required="false">
+           <label>MQTT URL</label>
+           <description>URL for MQTT Server to supply to containers</description>
+           <context>url</context>
+         </parameter>
+         <parameter name="polygotEnvPrefix" type="text" required="false">
+           <label>Polygot Environment PrefixL</label>
+           <description>Prefix to use for all Polygot generated environment variables</description>
+           <default>POLYGOT_</default> 
+         </parameter>
+		 </config-description>
+	</bridge-type>
 
-		<channels>
-			<channel id="channel1" typeId="sample-channel" />
-		</channels>
+    <thing-type id="container">
+       <supported-bridge-type-refs>
+            <bridge-type-ref id="containers" />
+       </supported-bridge-type-refs>
+        <label>Container</label>
+        <description>Container to manage</description>
+        
+        <config-description>
+            <parameter name="image" type="text" required="true">
+                <label>Container Image</label>
+                <description>Container image to manage</description>
+            </parameter>
+            <parameter name="tag" type="text" required="false">
+                <label>Container Tag</label>
+                <description>Version of container to manage</description>
+                <default>latest</default>
+            </parameter>
+            <parameter name="cmd" type="text" required="false">
+                <label>Docker Command</label>
+                <description>Docker command to execute, formatted as a JSON string to support the command array.</description>
+                <default>[]</default>
+            </parameter>
+             <parameter name="env" type="text" required="false">
+                <label>Docker environment variables</label>
+                <description>Docker environment variables, formatted as a JSON map.</description>
+                <default>[]</default>
+            </parameter>
+             <parameter name="runOnStart" type="boolean" required="false">
+                <label>Run on start</label>
+                <description>Start container when binding starts</description>
+                <default>true</default>
+            </parameter>
+            <parameter name="restart" type="boolean" required="false">
+                <label>Restart container if it fails</label>
+                <description>Restart container automatically.  Only used if runOnStart is true</description>
+                <default>true</default>
+            </parameter>
+        </config-description>
+    </thing-type>
 
-		<config-description>
-			<parameter name="config1" type="text" required="true">
-				<label>Sample parameter</label>
-				<description>This is a sample text configuration parameter.</description>
-			</parameter>
-		</config-description>
 
-	</thing-type>
-
-	<!-- Sample Channel Type -->
-	<channel-type id="sample-channel">
-		<item-type>polyglotItem</item-type>
-		<label>Polyglot Binding Channel</label>
-		<description>Sample channel for Polyglot Binding</description>
-	</channel-type>
 
 </thing:thing-descriptions>

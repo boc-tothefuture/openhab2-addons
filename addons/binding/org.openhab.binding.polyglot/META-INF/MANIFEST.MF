@@ -1,7 +1,9 @@
 Manifest-Version: 1.0
 Automatic-Module-Name: org.openhab.binding.polyglot
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ lib/docker-client-8.14.2-SNAPSHOT-shaded.jar,
+ lib/guava-26.0-jre.jar
 Bundle-ManifestVersion: 2
 Bundle-Name: Polyglot Binding
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
@@ -9,6 +11,7 @@ Bundle-SymbolicName: org.openhab.binding.polyglot;singleton:=true
 Bundle-Vendor: openHAB
 Bundle-Version: 2.4.0.qualifier
 Import-Package: 
+ com.google.gson;version="2.7.0",
  org.eclipse.jdt.annotation;resolution:=optional,
  org.eclipse.smarthome.config.core,
  org.eclipse.smarthome.core.library.types,
