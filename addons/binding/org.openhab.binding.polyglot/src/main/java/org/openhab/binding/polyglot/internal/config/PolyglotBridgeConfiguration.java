@@ -6,7 +6,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.polyglot.internal;
+package org.openhab.binding.polyglot.internal.config;
 
 import java.util.List;
 import java.util.Map;
@@ -17,11 +17,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 /**
- * The {@link PolyglotConfiguration} class contains fields mapping thing configuration parameters.
+ * The {@link PolyglotBridgeConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Brian OConnell - Initial contribution
  */
-public class PolyglotConfiguration {
+public class PolyglotBridgeConfiguration {
     public String mqttHostname;
 
     public String mqttPort;

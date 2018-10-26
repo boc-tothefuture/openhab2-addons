@@ -6,7 +6,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.polyglot.internal;
+package org.openhab.binding.polyglot.internal.bridge;
 
 import static org.openhab.binding.polyglot.internal.PolyglotBindingConstants.*;
 
@@ -20,6 +20,7 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.openhab.binding.polyglot.internal.container.ContainerHandler;
 import org.osgi.service.component.annotations.Component;
 
 import com.google.common.collect.ImmutableSet;
@@ -47,7 +48,7 @@ public class PolyglotHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_BRIDGE.equals(thingTypeUID)) {
-            return new PolyglotHandler((Bridge) thing);
+            return new PolyglotBridge((Bridge) thing);
         }
 
         if (THING_TYPE_CONTAINER.equals(thingTypeUID)) {

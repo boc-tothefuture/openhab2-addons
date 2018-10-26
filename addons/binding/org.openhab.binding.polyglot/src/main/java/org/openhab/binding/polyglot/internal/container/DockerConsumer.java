@@ -1,4 +1,4 @@
-package org.openhab.binding.polyglot.internal;
+package org.openhab.binding.polyglot.internal.container;
 
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;

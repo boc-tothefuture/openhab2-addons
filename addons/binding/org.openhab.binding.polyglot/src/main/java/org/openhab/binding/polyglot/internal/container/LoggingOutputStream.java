@@ -1,4 +1,4 @@
-package org.openhab.binding.polyglot.internal;
+package org.openhab.binding.polyglot.internal.container;
 
 import java.io.OutputStream;
 

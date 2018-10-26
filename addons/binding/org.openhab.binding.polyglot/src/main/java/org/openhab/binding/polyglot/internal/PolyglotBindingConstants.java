@@ -27,5 +27,5 @@ public class PolyglotBindingConstants {
     public static final ThingTypeUID THING_TYPE_CONTAINER = new ThingTypeUID(BINDING_ID, "container");
 
     // List of all Channel ids
-    public static final String CHANNEL_1 = "channel1";
+    public static final String CONTAINER_STATE = "container_state";
 }
