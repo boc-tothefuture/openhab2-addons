@@ -41,6 +41,17 @@
         <label>Container</label>
         <description>Container to manage</description>
         
+        <channels>
+            <channel id="image" typeId="image" />
+            <channel id="id" typeId="id" />
+            <channel id="created" typeId="created" /> 
+            <channel id="restart_count" typeId="restart_count" />
+            <channel id="restarting" typeId="restarting" />
+            <channel id="running" typeId="running" />
+            <channel id="paused" typeId="paused" />  
+            
+        </channels>
+        
         <config-description>
             <parameter name="image" type="text" required="true">
                 <label>Container Image</label>
@@ -71,9 +82,56 @@
                 <description>Restart container automatically.  Only used if runOnStart is true</description>
                 <default>true</default>
             </parameter>
-        </config-description>
+        </config-description>      
     </thing-type>
 
+    <channel-type id="image">
+        <item-type>String</item-type>
+        <label>Image Name</label>
+        <description>Name of Image</description>
+        <state readOnly="true" />
+    </channel-type>
+    
+    <channel-type id="id">
+        <item-type>String</item-type>
+        <label>ID of Container</label>
+        <description>ID of Docker Container</description>
+        <state readOnly="true" />
+    </channel-type>
+    
+     <channel-type id="created">
+        <item-type>DateTime</item-type>
+        <label>Time created</label>
+        <description>Time the container was created</description>
+        <state readOnly="true" />
+    </channel-type>
 
+     <channel-type id="restart_count">
+        <item-type>Number</item-type>
+        <label>Restart Count</label>
+        <description>Number of times container has been automatically restarted</description>
+        <state readOnly="true" />
+    </channel-type>
+    
+    <channel-type id="restarting">
+        <item-type>Switch</item-type>
+        <label>Container Restarting</label>
+        <description>Is the container currently restarting</description>
+        <state readOnly="true" />
+    </channel-type>
+    
+     <channel-type id="running">
+        <item-type>Switch</item-type>
+        <label>Container Running</label>
+        <description>Start or stop the container</description>
+        <state readOnly="false" />
+    </channel-type>
+    
+    <channel-type id="paused">
+        <item-type>Switch</item-type>
+        <label>Container Paused</label>
+        <description>Pause or unpause the container</description>
+        <state readOnly="false" />
+    </channel-type>
 
 </thing:thing-descriptions>

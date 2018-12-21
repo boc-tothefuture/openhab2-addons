@@ -27,5 +27,18 @@ public class PolyglotBindingConstants {
     public static final ThingTypeUID THING_TYPE_CONTAINER = new ThingTypeUID(BINDING_ID, "container");
 
     // List of all Channel ids
-    public static final String CONTAINER_STATE = "container_state";
+    public static final String CHANNEL_ID = "id";
+    public static final String CHANNEL_IMAGE = "image";
+
+    public static final String CHANNEL_CONTAINER_STATE = "state";
+
+    public static final String CHANNEL_CREATED = "created";
+
+    public static final String CHANNEL_RESTART_COUNT = "restart_count";
+
+    public static final String CHANNEL_RESTARTING = "restarting";
+
+    public static final String CHANNEL_RUNNING = "running";
+
+    public static final String CHANNEL_PAUSED = "paused";
 }

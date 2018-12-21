@@ -24,7 +24,7 @@ import com.google.common.collect.Maps;
 public class PolyglotBridgeConfiguration {
     public String mqttHostname;
 
-    public String mqttPort;
+    public int mqttPort;
 
     public String mqttUrl;
 
@@ -35,7 +35,7 @@ public class PolyglotBridgeConfiguration {
         // Create a map, remove all null and empty values,
         Map<String, String> envMap = Maps.newHashMap();
         envMap.put(polygotEnvPrefix + "MQTT_HOSTNAME", mqttHostname);
-        envMap.put(polygotEnvPrefix + "MQTT_PORT", mqttPort);
+        envMap.put(polygotEnvPrefix + "MQTT_PORT", String.valueOf(mqttPort));
         envMap.put(polygotEnvPrefix + "MQTT_URL", mqttUrl);
 
         envMap = envMap.entrySet().stream()

@@ -11,18 +11,23 @@ package org.openhab.binding.polyglot.internal.container;
 import static java.util.Arrays.asList;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.core.library.types.DateTimeType;
+import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -49,6 +54,8 @@ import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.ContainerState;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.HostConfig.RestartPolicy;
 import com.spotify.docker.client.messages.ProgressMessage;
@@ -71,8 +78,6 @@ public class ContainerHandler extends BaseThingHandler {
 
     private final ContainerConfiguration config;
 
-    private final PolyglotBridge bridge;
-
     private Optional<String> containerID = Optional.empty();
 
     // Logs progress from docker client.
@@ -87,16 +92,6 @@ public class ContainerHandler extends BaseThingHandler {
     // Helper class used to find containers created and managed by the polygot binding.
     private final PolygotManaged polygotManaged = new PolygotManaged(getThing());
 
-    // Shared service used by all container handlers to refresh container info.
-    private final static ScheduledExecutorService refreshService = Executors
-            .newSingleThreadScheduledExecutor(new ThreadFactory() {
-
-                @Override
-                public Thread newThread(@Nullable Runnable runnable) {
-                    return new Thread(runnable, "Polygot Refresh Thread");
-                }
-            });
-
     // Executor used to attach STDOUT/STDERR to logs.
     private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
 
@@ -106,33 +101,41 @@ public class ContainerHandler extends BaseThingHandler {
         }
     });
 
+    private final ScheduledFuture<?> refreshJob;
+
     public ContainerHandler(Thing thing) {
         super(thing);
         this.config = getConfigAs(ContainerConfiguration.class);
 
+        // Schedule a refresh of the status of this containers info. Spread out requests over the container refresh
+        // interval.
+        this.refreshJob = scheduler.scheduleAtFixedRate(() -> {
+            refreshStatus();
+        }, hashCode() % CONTAINER_REFRESH_INTERVAL, CONTAINER_REFRESH_INTERVAL, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Get the Polygot bridge.
+     * Would be nice to do this in the constructor, but bridge is null at that point.
+     */
+    private PolyglotBridge getPolygotBridge() {
         Bridge bridge = this.getBridge();
         if (bridge != null) {
             PolyglotBridge handler = (PolyglotBridge) bridge.getHandler();
             handler = Objects.requireNonNull(handler);
             if (handler != null) {
-                this.bridge = handler;
+                return handler;
             } else {
                 throw new IllegalStateException("ContainerHandler must have a bridge");
             }
         } else {
             throw new IllegalStateException("ContainerHandler must have a bridge");
         }
-
-        // Schedule a refresh of the status of this containers info. Spread out requests over the container refresh
-        // interval.
-        refreshService.scheduleAtFixedRate(() -> {
-            refreshStatus();
-        }, hashCode() % CONTAINER_REFRESH_INTERVAL, CONTAINER_REFRESH_INTERVAL, TimeUnit.SECONDS);
     }
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (PolyglotBindingConstants.CONTAINER_STATE.equals(channelUID.getId())) {
+        if (PolyglotBindingConstants.CHANNEL_RUNNING.equals(channelUID.getId())) {
 
             if (command.equals(OnOffType.ON)) {
                 // TODO: handle command
@@ -145,6 +148,31 @@ public class ContainerHandler extends BaseThingHandler {
             // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
             // "Could not control device at IP address x.x.x.x");
         }
+
+        if (PolyglotBindingConstants.CHANNEL_PAUSED.equals(channelUID.getId())) {
+
+            if (containerID.isPresent()) {
+
+                if (command.equals(OnOffType.ON)) {
+                    withDockerClient(client -> {
+                        client.pauseContainer(containerID.get());
+                    });
+                } else if (command.equals(OnOffType.OFF)) {
+                    withDockerClient(client -> {
+                        client.unpauseContainer(containerID.get());
+                    });
+                }
+                refreshStatus();
+            } else {
+                logger.warn("Cannot pause/unpause container until started");
+            }
+
+            // Note: if communication with thing fails for some reason,
+            // indicate that by setting the status with detail information:
+            // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+            // "Could not control device at IP address x.x.x.x");
+        }
+
     }
 
     /**
@@ -157,7 +185,24 @@ public class ContainerHandler extends BaseThingHandler {
 
                 logger.debug("Container info: {}", client.inspectContainer(containerID.get()));
 
-                // TODO: Fill up some channels with container information.
+                String containerId = containerID.get();
+                updateState(PolyglotBindingConstants.CHANNEL_ID, new StringType(containerId));
+
+                ContainerInfo info = client.inspectContainer(containerId);
+
+                updateState(PolyglotBindingConstants.CHANNEL_IMAGE, new StringType(info.image()));
+
+                ZonedDateTime created = ZonedDateTime.ofInstant(info.created().toInstant(), ZoneId.systemDefault());
+
+                updateState(PolyglotBindingConstants.CHANNEL_CREATED, new DateTimeType(created));
+
+                updateState(PolyglotBindingConstants.CHANNEL_RESTART_COUNT, new DecimalType(info.restartCount()));
+
+                ContainerState state = info.state();
+
+                updateState(PolyglotBindingConstants.CHANNEL_RUNNING, OnOffType.from(state.running()));
+                updateState(PolyglotBindingConstants.CHANNEL_PAUSED, OnOffType.from(state.paused()));
+                updateState(PolyglotBindingConstants.CHANNEL_RESTARTING, OnOffType.from(state.restarting()));
 
             });
         } else {
@@ -227,7 +272,7 @@ public class ContainerHandler extends BaseThingHandler {
 
             // Get env list from bridge and our own config.
             ImmutableList<String> env = ImmutableList
-                    .copyOf(Iterables.concat(bridge.getContainerEnv(), config.getEnv()));
+                    .copyOf(Iterables.concat(getPolygotBridge().getContainerEnv(), config.getEnv()));
 
             ContainerConfig containerConfig = ContainerConfig.builder().image(getImageLabel())
                     .hostConfig(hostConfig.build()).labels(polygotManaged.getManagedLabel()).env(env)
@@ -247,7 +292,7 @@ public class ContainerHandler extends BaseThingHandler {
      */
     private void withDockerClient(DockerConsumer consumer) {
 
-        try (DockerClient client = bridge.createDockerClient()) {
+        try (DockerClient client = getPolygotBridge().createDockerClient()) {
             consumer.execute(client);
         } catch (DockerException | InterruptedException | DockerCertificateException e) {
             logger.error("Docker Client Error", e);
@@ -288,7 +333,7 @@ public class ContainerHandler extends BaseThingHandler {
      */
     @Override
     public void dispose() {
-        refreshService.shutdown();
+        refreshJob.cancel(true);
         stopContainer();
         logExecutor.shutdownNow();
     }
