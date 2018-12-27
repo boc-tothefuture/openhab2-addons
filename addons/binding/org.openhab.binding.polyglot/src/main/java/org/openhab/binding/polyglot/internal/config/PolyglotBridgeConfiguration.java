@@ -26,17 +26,16 @@ public class PolyglotBridgeConfiguration {
 
     public int mqttPort;
 
-    public String mqttUrl;
+    public String mqttServer;
 
     public String polygotEnvPrefix;
 
     public ImmutableList<String> getContainerEnv() {
-
         // Create a map, remove all null and empty values,
         Map<String, String> envMap = Maps.newHashMap();
         envMap.put(polygotEnvPrefix + "MQTT_HOSTNAME", mqttHostname);
         envMap.put(polygotEnvPrefix + "MQTT_PORT", String.valueOf(mqttPort));
-        envMap.put(polygotEnvPrefix + "MQTT_URL", mqttUrl);
+        envMap.put(polygotEnvPrefix + "MQTT_SERVER", mqttServer);
 
         envMap = envMap.entrySet().stream()
 

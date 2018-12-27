@@ -157,6 +157,5 @@
     <module>org.openhab.binding.zoneminder</module>
     <module>org.openhab.binding.zway</module>
     <module>org.openhab.binding.polyglot</module>
-    <module>org.openhab.binding.foo</module>
   </modules>
 </project>

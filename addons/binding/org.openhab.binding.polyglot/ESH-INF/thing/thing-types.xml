@@ -8,130 +8,137 @@
 	<bridge-type id="containers">
 		<label>Polyglot Container Bridge</label>
 		<description>Bridge for managing containers with dynamic discovery of things</description>
-		
-		 <config-description>
-		   <parameter name="mqttHostname" type="text" required="false">
-           <label>MQTT Hostname</label>
-           <description>Hostname of ip address of MQTT server to supply to containers</description>
-           <context>network-address</context>
-         </parameter>
-          <parameter name="mqttPort" type="integer" required="false">
-           <label>MQTT Hostname</label>
-           <description>Hostname of ip address of MQTT server to supply to containers</description>
-           <context>network-address</context>
-           <default>1883</default> 
-         </parameter>
-         <parameter name="mqttUrl" type="text" required="false">
-           <label>MQTT URL</label>
-           <description>URL for MQTT Server to supply to containers</description>
-           <context>url</context>
-         </parameter>
-         <parameter name="polygotEnvPrefix" type="text" required="false">
-           <label>Polygot Environment PrefixL</label>
-           <description>Prefix to use for all Polygot generated environment variables</description>
-           <default>POLYGOT_</default> 
-         </parameter>
-		 </config-description>
+		<config-description>
+			<parameter name="mqttHostname" type="text" required="false">
+				<label>MQTT Hostname</label>
+				<description>Hostname of ip address of MQTT server to supply to containers</description>
+				<context>network-address</context>
+			</parameter>
+			<parameter name="mqttPort" type="integer" required="false">
+				<label>MQTT Hostname</label>
+				<description>Hostname of ip address of MQTT server to supply to containers</description>
+				<context>network-address</context>
+				<default>1883</default>
+			</parameter>
+			<parameter name="mqttServer" type="text" required="false">
+				<label>MQTT URL</label>
+				<description>URL for MQTT Server to supply to containers in format of Format is tcp://host:port</description>
+				<context>url</context>
+			</parameter>
+			<parameter name="polygotEnvPrefix" type="text" required="false">
+				<label>Polygot Environment PrefixL</label>
+				<description>Prefix to use for all Polygot generated environment variables</description>
+				<default></default>
+			</parameter>
+		</config-description>
 	</bridge-type>
 
-    <thing-type id="container">
-       <supported-bridge-type-refs>
-            <bridge-type-ref id="containers" />
-       </supported-bridge-type-refs>
-        <label>Container</label>
-        <description>Container to manage</description>
-        
-        <channels>
-            <channel id="image" typeId="image" />
-            <channel id="id" typeId="id" />
-            <channel id="created" typeId="created" /> 
-            <channel id="restart_count" typeId="restart_count" />
-            <channel id="restarting" typeId="restarting" />
-            <channel id="running" typeId="running" />
-            <channel id="paused" typeId="paused" />  
-            
-        </channels>
-        
-        <config-description>
-            <parameter name="image" type="text" required="true">
-                <label>Container Image</label>
-                <description>Container image to manage</description>
-            </parameter>
-            <parameter name="tag" type="text" required="false">
-                <label>Container Tag</label>
-                <description>Version of container to manage</description>
-                <default>latest</default>
-            </parameter>
-            <parameter name="cmd" type="text" required="false">
-                <label>Docker Command</label>
-                <description>Docker command to execute, formatted as a JSON string to support the command array.</description>
-                <default>[]</default>
-            </parameter>
-             <parameter name="env" type="text" required="false">
-                <label>Docker environment variables</label>
-                <description>Docker environment variables, formatted as a JSON map.</description>
-                <default>[]</default>
-            </parameter>
-             <parameter name="runOnStart" type="boolean" required="false">
-                <label>Run on start</label>
-                <description>Start container when binding starts</description>
-                <default>true</default>
-            </parameter>
-            <parameter name="restart" type="boolean" required="false">
-                <label>Restart container if it fails</label>
-                <description>Restart container automatically.  Only used if runOnStart is true</description>
-                <default>true</default>
-            </parameter>
-        </config-description>      
-    </thing-type>
+	<thing-type id="container">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="containers" />
+		</supported-bridge-type-refs>
+		<label>Container</label>
+		<description>Container to manage</description>
 
-    <channel-type id="image">
-        <item-type>String</item-type>
-        <label>Image Name</label>
-        <description>Name of Image</description>
-        <state readOnly="true" />
-    </channel-type>
-    
-    <channel-type id="id">
-        <item-type>String</item-type>
-        <label>ID of Container</label>
-        <description>ID of Docker Container</description>
-        <state readOnly="true" />
-    </channel-type>
-    
-     <channel-type id="created">
-        <item-type>DateTime</item-type>
-        <label>Time created</label>
-        <description>Time the container was created</description>
-        <state readOnly="true" />
-    </channel-type>
+		<channels>
+			<channel id="image" typeId="image" />
+			<channel id="id" typeId="id" />
+			<channel id="created" typeId="created" />
+			<channel id="restart_count" typeId="restart_count" />
+			<channel id="restarting" typeId="restarting" />
+			<channel id="running" typeId="running" />
+			<channel id="paused" typeId="paused" />
+		</channels>
 
-     <channel-type id="restart_count">
-        <item-type>Number</item-type>
-        <label>Restart Count</label>
-        <description>Number of times container has been automatically restarted</description>
-        <state readOnly="true" />
-    </channel-type>
-    
-    <channel-type id="restarting">
-        <item-type>Switch</item-type>
-        <label>Container Restarting</label>
-        <description>Is the container currently restarting</description>
-        <state readOnly="true" />
-    </channel-type>
-    
-     <channel-type id="running">
-        <item-type>Switch</item-type>
-        <label>Container Running</label>
-        <description>Start or stop the container</description>
-        <state readOnly="false" />
-    </channel-type>
-    
-    <channel-type id="paused">
-        <item-type>Switch</item-type>
-        <label>Container Paused</label>
-        <description>Pause or unpause the container</description>
-        <state readOnly="false" />
-    </channel-type>
+		<config-description>
+			<parameter name="image" type="text" required="true">
+				<label>Container Image</label>
+				<description>Container image to manage</description>
+			</parameter>
+			<parameter name="mqttClientID" type="text" required="false">
+				<label>MQTT Client ID</label>
+				<description>Client ID to supply to container in the MQTT_CLIENT_ID environment variable.</description>
+			</parameter>
+			<parameter name="tag" type="text" required="false">
+				<label>Container Tag</label>
+				<description>Version of container to manage</description>
+				<default>latest</default>
+			</parameter>
+			<parameter name="cmd" type="text" required="false">
+				<label>Docker Command</label>
+				<description>Docker command to execute, formatted as a JSON string to support the command array.</description>
+				<default>[]</default>
+			</parameter>
+			<parameter name="env" type="text" required="false">
+				<label>Docker environment variables</label>
+				<description>Docker environment variables, formatted as a JSON map.</description>
+				<default>[]</default>
+			</parameter>
+			<parameter name="runOnStart" type="boolean" required="false">
+				<label>Run on start</label>
+				<description>Start container when binding starts</description>
+				<default>true</default>
+			</parameter>
+			<parameter name="skipPull" type="boolean" required="false">
+				<label>Skip docker pull step</label>
+				<description>Don't pull from registry. Useful if container only exists locally</description>
+				<default>false</default>
+			</parameter>
+			<parameter name="restart" type="boolean" required="false">
+				<label>Restart container if it fails</label>
+				<description>Restart container automatically.  Only used if runOnStart is true</description>
+				<default>true</default>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-type id="image">
+		<item-type>String</item-type>
+		<label>Image Name</label>
+		<description>Name of Image</description>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="id">
+		<item-type>String</item-type>
+		<label>ID of Container</label>
+		<description>ID of Docker Container</description>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="created">
+		<item-type>DateTime</item-type>
+		<label>Time created</label>
+		<description>Time the container was created</description>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="restart_count">
+		<item-type>Number</item-type>
+		<label>Restart Count</label>
+		<description>Number of times container has been automatically restarted</description>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="restarting">
+		<item-type>Switch</item-type>
+		<label>Container Restarting</label>
+		<description>Is the container currently restarting</description>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="running">
+		<item-type>Switch</item-type>
+		<label>Container Running</label>
+		<description>Start or stop the container</description>
+		<state readOnly="false" />
+	</channel-type>
+
+	<channel-type id="paused">
+		<item-type>Switch</item-type>
+		<label>Container Paused</label>
+		<description>Pause or unpause the container</description>
+		<state readOnly="false" />
+	</channel-type>
 
 </thing:thing-descriptions>

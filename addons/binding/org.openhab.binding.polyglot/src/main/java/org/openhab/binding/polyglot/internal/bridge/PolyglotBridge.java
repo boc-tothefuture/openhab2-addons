@@ -33,7 +33,6 @@ import com.spotify.docker.client.exceptions.DockerException;
  */
 @NonNullByDefault
 public class PolyglotBridge extends BaseBridgeHandler {
-
     private final Logger logger = LoggerFactory.getLogger(PolyglotBridge.class);
     private final PolyglotBridgeConfiguration config;
 
@@ -43,13 +42,15 @@ public class PolyglotBridge extends BaseBridgeHandler {
     }
 
     public List<String> getContainerEnv() {
-
         return config.getContainerEnv();
+    }
+
+    public String getPolygotEnvPrefix() {
+        return config.polygotEnvPrefix;
     }
 
     @Override
     public void initialize() {
-
         // The framework requires you to return from this method quickly. Also, before leaving this method a thing
         // status from one of ONLINE, OFFLINE or UNKNOWN must be set. This might already be the real thing status in
         // case you can decide it directly.
@@ -89,7 +90,6 @@ public class PolyglotBridge extends BaseBridgeHandler {
     @Override
     public void handleCommand(ChannelUID uid, Command command) {
         logger.error("Polygot bridge does not respond to commands.");
-
     }
 
 }

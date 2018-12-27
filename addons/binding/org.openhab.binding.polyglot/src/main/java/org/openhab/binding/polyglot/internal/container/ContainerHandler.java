@@ -103,13 +103,16 @@ public class ContainerHandler extends BaseThingHandler {
 
     private final ScheduledFuture<?> refreshJob;
 
+    // Lock for refreshing status
+    private final Object refreshLock = new Object();
+
     public ContainerHandler(Thing thing) {
         super(thing);
         this.config = getConfigAs(ContainerConfiguration.class);
 
         // Schedule a refresh of the status of this containers info. Spread out requests over the container refresh
         // interval.
-        this.refreshJob = scheduler.scheduleAtFixedRate(() -> {
+        this.refreshJob = scheduler.scheduleWithFixedDelay(() -> {
             refreshStatus();
         }, hashCode() % CONTAINER_REFRESH_INTERVAL, CONTAINER_REFRESH_INTERVAL, TimeUnit.SECONDS);
     }
@@ -136,11 +139,16 @@ public class ContainerHandler extends BaseThingHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (PolyglotBindingConstants.CHANNEL_RUNNING.equals(channelUID.getId())) {
-
             if (command.equals(OnOffType.ON)) {
-                // TODO: handle command
+                scheduler.execute(() -> {
+                    startContainer();
+                    refreshStatus();
+                });
             } else if (command.equals(OnOffType.OFF)) {
-                // TODO: handle command
+                scheduler.execute(() -> {
+                    stopContainer();
+                    refreshStatus();
+                });
             }
 
             // Note: if communication with thing fails for some reason,
@@ -150,9 +158,7 @@ public class ContainerHandler extends BaseThingHandler {
         }
 
         if (PolyglotBindingConstants.CHANNEL_PAUSED.equals(channelUID.getId())) {
-
             if (containerID.isPresent()) {
-
                 if (command.equals(OnOffType.ON)) {
                     withDockerClient(client -> {
                         client.pauseContainer(containerID.get());
@@ -181,32 +187,37 @@ public class ContainerHandler extends BaseThingHandler {
      */
     private void refreshStatus() {
         if (containerID.isPresent()) {
-            withDockerClient(client -> {
+            synchronized (refreshLock) {
+                withDockerClient(client -> {
 
-                logger.debug("Container info: {}", client.inspectContainer(containerID.get()));
+                    logger.debug("Container info: {}", client.inspectContainer(containerID.get()));
 
-                String containerId = containerID.get();
-                updateState(PolyglotBindingConstants.CHANNEL_ID, new StringType(containerId));
+                    String containerId = containerID.get();
+                    updateState(PolyglotBindingConstants.CHANNEL_ID, new StringType(containerId));
 
-                ContainerInfo info = client.inspectContainer(containerId);
+                    ContainerInfo info = client.inspectContainer(containerId);
 
-                updateState(PolyglotBindingConstants.CHANNEL_IMAGE, new StringType(info.image()));
+                    updateState(PolyglotBindingConstants.CHANNEL_IMAGE, new StringType(info.image()));
 
-                ZonedDateTime created = ZonedDateTime.ofInstant(info.created().toInstant(), ZoneId.systemDefault());
+                    ZonedDateTime created = ZonedDateTime.ofInstant(info.created().toInstant(), ZoneId.systemDefault());
 
-                updateState(PolyglotBindingConstants.CHANNEL_CREATED, new DateTimeType(created));
+                    updateState(PolyglotBindingConstants.CHANNEL_CREATED, new DateTimeType(created));
 
-                updateState(PolyglotBindingConstants.CHANNEL_RESTART_COUNT, new DecimalType(info.restartCount()));
+                    updateState(PolyglotBindingConstants.CHANNEL_RESTART_COUNT, new DecimalType(info.restartCount()));
 
-                ContainerState state = info.state();
+                    ContainerState state = info.state();
 
-                updateState(PolyglotBindingConstants.CHANNEL_RUNNING, OnOffType.from(state.running()));
-                updateState(PolyglotBindingConstants.CHANNEL_PAUSED, OnOffType.from(state.paused()));
-                updateState(PolyglotBindingConstants.CHANNEL_RESTARTING, OnOffType.from(state.restarting()));
+                    updateState(PolyglotBindingConstants.CHANNEL_RUNNING, OnOffType.from(state.running()));
+                    updateState(PolyglotBindingConstants.CHANNEL_PAUSED, OnOffType.from(state.paused()));
+                    updateState(PolyglotBindingConstants.CHANNEL_RESTARTING, OnOffType.from(state.restarting()));
 
-            });
+                });
+            }
         } else {
-            logger.warn("Cannot refresh status before container starts");
+            logger.debug("Cannot refresh status before container starts");
+            updateState(PolyglotBindingConstants.CHANNEL_RUNNING, OnOffType.OFF);
+            updateState(PolyglotBindingConstants.CHANNEL_PAUSED, OnOffType.OFF);
+            updateState(PolyglotBindingConstants.CHANNEL_RESTARTING, OnOffType.OFF);
         }
     }
 
@@ -217,7 +228,6 @@ public class ContainerHandler extends BaseThingHandler {
      * @return Colon delimited image label
      */
     private String getImageLabel() {
-
         return String.join(":", asList(config.image, config.tag));
     }
 
@@ -242,8 +252,8 @@ public class ContainerHandler extends BaseThingHandler {
         List<Container> containers = findContainers();
         // If more than one container exists, we wouldn't know which one to manage. Destroy them all.
         if (containers.size() > 0) {
-
-            logger.debug("{} managed containers found, stopping and removing all.", containers.size());
+            logger.debug("{} managed containers found for {}, stopping and removing all.", containers.size(),
+                    polygotManaged.getPolygotManagedValue());
             withDockerClient(client -> {
                 for (Container container : containers) {
                     logger.debug("Stopping and removing container with id {}", container.id());
@@ -261,7 +271,6 @@ public class ContainerHandler extends BaseThingHandler {
      * @return ContainerID of newly created container
      */
     private String createContainer() {
-
         cleanupContainers();
 
         withDockerClient(client -> {
@@ -271,8 +280,8 @@ public class ContainerHandler extends BaseThingHandler {
             }
 
             // Get env list from bridge and our own config.
-            ImmutableList<String> env = ImmutableList
-                    .copyOf(Iterables.concat(getPolygotBridge().getContainerEnv(), config.getEnv()));
+            ImmutableList<String> env = ImmutableList.copyOf(Iterables.concat(getPolygotBridge().getContainerEnv(),
+                    config.getEnv(getPolygotBridge().getPolygotEnvPrefix(), getThing().getUID().getAsString())));
 
             ContainerConfig containerConfig = ContainerConfig.builder().image(getImageLabel())
                     .hostConfig(hostConfig.build()).labels(polygotManaged.getManagedLabel()).env(env)
@@ -291,7 +300,6 @@ public class ContainerHandler extends BaseThingHandler {
      * @param consumer Lamba to execute
      */
     private void withDockerClient(DockerConsumer consumer) {
-
         try (DockerClient client = getPolygotBridge().createDockerClient()) {
             consumer.execute(client);
         } catch (DockerException | InterruptedException | DockerCertificateException e) {
@@ -305,7 +313,6 @@ public class ContainerHandler extends BaseThingHandler {
      */
     @Override
     public void initialize() {
-
         // The framework requires you to return from this method quickly. Also, before leaving this method a thing
         // status from one of ONLINE, OFFLINE or UNKNOWN must be set. This might already be the real thing status in
         // case you can decide it directly.
@@ -360,7 +367,8 @@ public class ContainerHandler extends BaseThingHandler {
      * @throws InterruptedException If the thread is interrupted waiting for container to stop
      */
     private void performStop(DockerClient client, String containerID) throws DockerException, InterruptedException {
-        logger.debug("Waiting up to {} seconds for container with ID: {} to stop", CONTAINER_STOP_WAIT, containerID);
+        logger.info("Waiting up to {} seconds for container with ID: {} to gracefully stop, then killing.",
+                CONTAINER_STOP_WAIT, containerID);
         client.stopContainer(containerID, CONTAINER_STOP_WAIT);
     }
 
@@ -372,10 +380,11 @@ public class ContainerHandler extends BaseThingHandler {
      * Refresh the status of the container
      */
     private void startContainer() {
-
-        withDockerClient(client -> {
-            client.pull(getImageLabel(), dockerProgressHandler);
-        });
+        if (config.skipPull == false) {
+            withDockerClient(client -> {
+                client.pull(getImageLabel(), dockerProgressHandler);
+            });
+        }
 
         String containerID = createContainer();
         withDockerClient(client -> {
@@ -396,7 +405,7 @@ public class ContainerHandler extends BaseThingHandler {
             withDockerClient(client -> {
                 try {
                     LogStream stream = client.attachContainer(containerID.get(), AttachParameter.STDOUT,
-                            AttachParameter.STDIN, AttachParameter.STREAM);
+                            AttachParameter.STDERR, AttachParameter.STREAM);
                     stream.attach(new LoggingOutputStream(Level.INFO, getThing()),
                             new LoggingOutputStream(Level.ERROR, getThing()));
                 } catch (IOException e) {

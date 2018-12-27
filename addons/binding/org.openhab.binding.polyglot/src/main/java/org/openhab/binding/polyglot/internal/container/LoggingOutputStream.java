@@ -1,3 +1,11 @@
+/**
+ * Copyright (c) 2010-2018 by the respective copyright holders.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.openhab.binding.polyglot.internal.container;
 
 import java.io.OutputStream;
@@ -7,10 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
+/**
+ *
+ * @author Brian OConnell - Initial contribution
+ */
 class LoggingOutputStream extends OutputStream {
 
     // Newline bytes, reversed for easy reverse checking.
-    private final static String LINE_SEPERATOR = System.lineSeparator();
+    private static final String LINE_SEPERATOR = System.lineSeparator();
 
     private StringBuilder buffer;
 
@@ -47,7 +59,6 @@ class LoggingOutputStream extends OutputStream {
                     break;
                 default:
                     break;
-
             }
             buffer = new StringBuilder();
         }

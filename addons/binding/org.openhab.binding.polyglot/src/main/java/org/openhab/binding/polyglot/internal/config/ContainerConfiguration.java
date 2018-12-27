@@ -32,9 +32,13 @@ public class ContainerConfiguration {
 
     public boolean restart;
 
+    public boolean skipPull;
+
     public String cmd;
 
     public String env;
+
+    public String mqttClientID;
 
     public List<String> getCommandList() {
         Gson gson = new Gson();
@@ -42,11 +46,17 @@ public class ContainerConfiguration {
         return Arrays.asList(commands);
     }
 
-    public List<String> getEnv() {
+    public List<String> getEnv(String polygotEnvPrefix, String thingUUID) {
         Gson gson = new Gson();
 
         Map<String, String> envMap = Maps.newHashMap();
         envMap = gson.fromJson(env, envMap.getClass());
+
+        if (mqttClientID != null) {
+            envMap.put(polygotEnvPrefix + "MQTT_CLIENT_ID", mqttClientID);
+        } else {
+            envMap.put(polygotEnvPrefix + "MQTT_CLIENT_ID", thingUUID);
+        }
 
         List<String> env = envMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.toList());
