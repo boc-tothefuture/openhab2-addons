@@ -38,7 +38,7 @@ This binding does not support discovery.
 | image                   | text    | Container image to manage                                                         | yes      |         |
 | tag                     | text    | Container tag to append to image name                                             | no       | "latest"|
 | mqttClientID            | text    | Client ID to supply to container in the MQTT_CLIENT_ID environment variable       | no       | thingUID|
-| logRegex                | text    | [Regular expression for enhanced logs processing](###logging-regex)               | no       |         |
+| logRegex                | text    | [Regular expression for enhanced logs processing](#logging-regex)               | no       |         |
 | cmd                     | text    | Docker command to supply to container (formatted as a JSON array)                 | no       | []      |
 | env                     | text    | Docker environment variables (formatted as a JSON map)                            | no       | []      |
 | runOnStart              | boolean | Start container when binding starts                                               | no       | yes     |
@@ -47,7 +47,9 @@ This binding does not support discovery.
 
 
 ### Logging Regex
-Requires named capture groups. Square brackets [] in the string must be escaped. 
+Requires named capture groups 
+Square brackets [] in the string must be escaped
+
  - Group "level" maps to log level
  - Group "strip" is removed.
 
@@ -98,8 +100,7 @@ sitemap demo label="Main Menu"
       Text item=Container_Restart_Count
       Switch item=Container_Restarting
       Switch item=Container_Running
-      Switch item=Container_Paused
-      Switch item=Sleep_Container_Running           
+      Switch item=Container_Paused      
    }
 }
 ```
