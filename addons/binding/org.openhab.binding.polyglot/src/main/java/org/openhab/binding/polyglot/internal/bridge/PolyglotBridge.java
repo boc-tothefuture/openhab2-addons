@@ -50,6 +50,11 @@ public class PolyglotBridge extends BaseBridgeHandler {
     }
 
     @Override
+    public void dispose() {
+        super.dispose();
+    }
+
+    @Override
     public void initialize() {
         // The framework requires you to return from this method quickly. Also, before leaving this method a thing
         // status from one of ONLINE, OFFLINE or UNKNOWN must be set. This might already be the real thing status in
@@ -64,8 +69,7 @@ public class PolyglotBridge extends BaseBridgeHandler {
         updateStatus(ThingStatus.UNKNOWN);
 
         scheduler.execute(() -> {
-            try {
-                DockerClient client = createDockerClient();
+            try (DockerClient client = createDockerClient()) {
                 logger.debug("Docker Client Info: " + String.valueOf(client.info()));
                 updateStatus(ThingStatus.ONLINE);
             } catch (DockerException | InterruptedException | DockerCertificateException e) {

@@ -28,6 +28,10 @@ public class PolyglotBridgeConfiguration {
 
     public String mqttServer;
 
+    public String mqttUsername;
+
+    public String mqttPassword;
+
     public String polygotEnvPrefix;
 
     public ImmutableList<String> getContainerEnv() {
@@ -36,6 +40,8 @@ public class PolyglotBridgeConfiguration {
         envMap.put(polygotEnvPrefix + "MQTT_HOSTNAME", mqttHostname);
         envMap.put(polygotEnvPrefix + "MQTT_PORT", String.valueOf(mqttPort));
         envMap.put(polygotEnvPrefix + "MQTT_SERVER", mqttServer);
+        envMap.put(polygotEnvPrefix + "MQTT_USERNAME", mqttUsername);
+        envMap.put(polygotEnvPrefix + "MQTT_PASSWORD", mqttPassword);
 
         envMap = envMap.entrySet().stream()
 

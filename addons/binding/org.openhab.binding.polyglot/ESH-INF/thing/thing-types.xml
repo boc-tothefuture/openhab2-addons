@@ -11,20 +11,28 @@
 		<config-description>
 			<parameter name="mqttHostname" type="text" required="false">
 				<label>MQTT Hostname</label>
-				<description>Hostname of ip address of MQTT server to supply to containers</description>
+				<description>Hostname of IP address of MQTT server to supply to containers in the MQTT_HOSTNAME environment variable</description>
 				<context>network-address</context>
 			</parameter>
 			<parameter name="mqttPort" type="integer" required="false">
-				<label>MQTT Hostname</label>
-				<description>Hostname of ip address of MQTT server to supply to containers</description>
+				<label>MQTT Port</label>
+				<description>Network port of the MQTT server to supply to containers in the MQTT_PORT environment variable</description>
 				<context>network-address</context>
 				<default>1883</default>
 			</parameter>
 			<parameter name="mqttServer" type="text" required="false">
 				<label>MQTT URL</label>
-				<description>URL for MQTT Server to supply to containers in format of Format is tcp://host:port</description>
+				<description>URL for MQTT Server to supply to containers in format tcp://host:port and supplied to the container in the MQTT_SERVER environment variable</description>
 				<context>url</context>
 			</parameter>
+            <parameter name="mqttUsername" type="text" required="false">
+                <label>MQTT Username</label>
+                <description>Username to connect to MQTT Server. Supplied to containers in the MQTT_USERNAME environment variable</description>
+            </parameter>
+            <parameter name="mqttPassword" type="text" required="false">
+                <label>MQTT Password</label>
+                <description>Password to connect to MQTT Server. Supplied to containers in the MQTT_PASSWORD environment variable</description>
+            </parameter>
 			<parameter name="polygotEnvPrefix" type="text" required="false">
 				<label>Polygot Environment PrefixL</label>
 				<description>Prefix to use for all Polygot generated environment variables</description>
@@ -59,6 +67,10 @@
 				<label>MQTT Client ID</label>
 				<description>Client ID to supply to container in the MQTT_CLIENT_ID environment variable.</description>
 			</parameter>
+			 <parameter name="logRegex" type="text" required="false">
+                <label>Log Regular Expression</label>
+                <description>Regular expression for enhanced logs processing. Requires named capture groups. Group "level" maps to log level. Group "strip" is removed.</description>
+            </parameter>
 			<parameter name="tag" type="text" required="false">
 				<label>Container Tag</label>
 				<description>Version of container to manage</description>
@@ -66,12 +78,12 @@
 			</parameter>
 			<parameter name="cmd" type="text" required="false">
 				<label>Docker Command</label>
-				<description>Docker command to execute, formatted as a JSON string to support the command array.</description>
+				<description>Docker command to supply to container (formatted as a JSON array)</description>
 				<default>[]</default>
 			</parameter>
 			<parameter name="env" type="text" required="false">
 				<label>Docker environment variables</label>
-				<description>Docker environment variables, formatted as a JSON map.</description>
+				<description>Docker environment variables (formatted as a JSON map)</description>
 				<default>[]</default>
 			</parameter>
 			<parameter name="runOnStart" type="boolean" required="false">

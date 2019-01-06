@@ -21,6 +21,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -76,8 +78,6 @@ public class ContainerHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(ContainerHandler.class);
 
-    private final ContainerConfiguration config;
-
     private Optional<String> containerID = Optional.empty();
 
     // Logs progress from docker client.
@@ -93,47 +93,54 @@ public class ContainerHandler extends BaseThingHandler {
     private final PolygotManaged polygotManaged = new PolygotManaged(getThing());
 
     // Executor used to attach STDOUT/STDERR to logs.
-    private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+    private Optional<ExecutorService> logExecutor = Optional.empty();
 
-        @Override
-        public Thread newThread(@Nullable Runnable runnable) {
-            return new Thread(runnable, getThing().getUID().getAsString() + "-log-thread");
-        }
-    });
-
-    private final ScheduledFuture<?> refreshJob;
+    private Optional<ScheduledFuture<?>> refreshJob = Optional.empty();
 
     // Lock for refreshing status
     private final Object refreshLock = new Object();
 
+    private Optional<Pattern> logRegex = Optional.empty();
+
+    // Access is needed to bridge during shutdown and bridge is not available during dispose or construction so
+    // the bridge must be set here during initialize
+    Optional<PolyglotBridge> bridge = Optional.empty();
+
     public ContainerHandler(Thing thing) {
         super(thing);
-        this.config = getConfigAs(ContainerConfiguration.class);
 
-        // Schedule a refresh of the status of this containers info. Spread out requests over the container refresh
-        // interval.
-        this.refreshJob = scheduler.scheduleWithFixedDelay(() -> {
-            refreshStatus();
-        }, hashCode() % CONTAINER_REFRESH_INTERVAL, CONTAINER_REFRESH_INTERVAL, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Create a new logExector
+     */
+    private ExecutorService createLogExecutor() {
+        return Executors.newSingleThreadExecutor(new ThreadFactory() {
+
+            @Override
+            public Thread newThread(@Nullable Runnable runnable) {
+                return new Thread(runnable, getThing().getUID().getAsString() + "-log-thread");
+            }
+        });
+    }
+
+    /**
+     * Fetch the container configuration
+     */
+    private ContainerConfiguration getContainerConfig() {
+        return getConfigAs(ContainerConfiguration.class);
     }
 
     /**
      * Get the Polygot bridge.
      * Would be nice to do this in the constructor, but bridge is null at that point.
      */
-    private PolyglotBridge getPolygotBridge() {
-        Bridge bridge = this.getBridge();
-        if (bridge != null) {
-            PolyglotBridge handler = (PolyglotBridge) bridge.getHandler();
-            handler = Objects.requireNonNull(handler);
-            if (handler != null) {
-                return handler;
-            } else {
-                throw new IllegalStateException("ContainerHandler must have a bridge");
-            }
-        } else {
-            throw new IllegalStateException("ContainerHandler must have a bridge");
-        }
+    private PolyglotBridge getPolyglotBridge() {
+        Bridge bridge = Objects.requireNonNull(this.getBridge(), "ContainerHandler must have a bridge");
+        @SuppressWarnings("null")
+        PolyglotBridge handler = (PolyglotBridge) bridge.getHandler();
+        return Objects.requireNonNull(handler, "ContainerHandler must have a bridge handler");
+
     }
 
     @Override
@@ -150,11 +157,6 @@ public class ContainerHandler extends BaseThingHandler {
                     refreshStatus();
                 });
             }
-
-            // Note: if communication with thing fails for some reason,
-            // indicate that by setting the status with detail information:
-            // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-            // "Could not control device at IP address x.x.x.x");
         }
 
         if (PolyglotBindingConstants.CHANNEL_PAUSED.equals(channelUID.getId())) {
@@ -172,11 +174,6 @@ public class ContainerHandler extends BaseThingHandler {
             } else {
                 logger.warn("Cannot pause/unpause container until started");
             }
-
-            // Note: if communication with thing fails for some reason,
-            // indicate that by setting the status with detail information:
-            // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-            // "Could not control device at IP address x.x.x.x");
         }
 
     }
@@ -228,7 +225,7 @@ public class ContainerHandler extends BaseThingHandler {
      * @return Colon delimited image label
      */
     private String getImageLabel() {
-        return String.join(":", asList(config.image, config.tag));
+        return String.join(":", asList(getContainerConfig().image, getContainerConfig().tag));
     }
 
     /**
@@ -275,17 +272,18 @@ public class ContainerHandler extends BaseThingHandler {
 
         withDockerClient(client -> {
             HostConfig.Builder hostConfig = HostConfig.builder();
-            if (config.runOnStart && config.restart) {
+            if (getContainerConfig().runOnStart && getContainerConfig().restart) {
                 hostConfig.restartPolicy(RestartPolicy.unlessStopped());
             }
 
             // Get env list from bridge and our own config.
-            ImmutableList<String> env = ImmutableList.copyOf(Iterables.concat(getPolygotBridge().getContainerEnv(),
-                    config.getEnv(getPolygotBridge().getPolygotEnvPrefix(), getThing().getUID().getAsString())));
+            ImmutableList<String> env = ImmutableList
+                    .copyOf(Iterables.concat(getPolyglotBridge().getContainerEnv(), getContainerConfig()
+                            .getEnv(getPolyglotBridge().getPolygotEnvPrefix(), getThing().getUID().getAsString())));
 
             ContainerConfig containerConfig = ContainerConfig.builder().image(getImageLabel())
                     .hostConfig(hostConfig.build()).labels(polygotManaged.getManagedLabel()).env(env)
-                    .cmd(config.getCommandList()).build();
+                    .cmd(getContainerConfig().getCommandList()).build();
 
             final ContainerCreation container = client.createContainer(containerConfig);
             this.containerID = Optional.of(container.id());
@@ -300,11 +298,15 @@ public class ContainerHandler extends BaseThingHandler {
      * @param consumer Lamba to execute
      */
     private void withDockerClient(DockerConsumer consumer) {
-        try (DockerClient client = getPolygotBridge().createDockerClient()) {
-            consumer.execute(client);
-        } catch (DockerException | InterruptedException | DockerCertificateException e) {
-            logger.error("Docker Client Error", e);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+        if (bridge.isPresent()) {
+            try (DockerClient client = bridge.get().createDockerClient()) {
+                consumer.execute(client);
+            } catch (DockerException | InterruptedException | DockerCertificateException e) {
+                logger.error("Docker Client Error", e);
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+            }
+        } else {
+            logger.error("Cannot open docker client without reference to PolyglotBridge");
         }
     }
 
@@ -324,15 +326,27 @@ public class ContainerHandler extends BaseThingHandler {
         // the framework is then able to reuse the resources from the thing handler initialization.
         // we set this upfront to reliably check status updates in unit tests.
         updateStatus(ThingStatus.UNKNOWN);
+        this.bridge = Optional.of(getPolyglotBridge());
 
-        if (config.runOnStart) {
-            scheduler.execute(() -> {
-                startContainer();
+        try {
+            if (getContainerConfig().logRegex != null) {
+                this.logRegex = Optional.of(Pattern.compile(getContainerConfig().logRegex));
+            }
+            if (getContainerConfig().runOnStart) {
+                scheduler.execute(() -> {
+                    startContainer();
+                    updateStatus(ThingStatus.ONLINE);
+                });
+            } else {
                 updateStatus(ThingStatus.ONLINE);
-            });
-        } else {
-            updateStatus(ThingStatus.ONLINE);
+            }
+            // Schedule a refresh of the status of this containers info. Spread out requests over the container refresh
+            // interval.
+        } catch (PatternSyntaxException exception) {
+            logger.error("Error processing logging pattern: {}", getContainerConfig().logRegex, exception);
+            updateStatus(ThingStatus.OFFLINE);
         }
+
     }
 
     /**
@@ -340,9 +354,9 @@ public class ContainerHandler extends BaseThingHandler {
      */
     @Override
     public void dispose() {
-        refreshJob.cancel(true);
+        logger.debug("Disposed called on container handler: " + getThing().getUID().getAsString());
         stopContainer();
-        logExecutor.shutdownNow();
+        logExecutor.ifPresent(executor -> executor.shutdownNow());
     }
 
     /**
@@ -370,6 +384,8 @@ public class ContainerHandler extends BaseThingHandler {
         logger.info("Waiting up to {} seconds for container with ID: {} to gracefully stop, then killing.",
                 CONTAINER_STOP_WAIT, containerID);
         client.stopContainer(containerID, CONTAINER_STOP_WAIT);
+        logger.debug("Container with ID: {} stopped", containerID);
+        refreshJob.ifPresent(job -> job.cancel(true));
     }
 
     /**
@@ -380,7 +396,7 @@ public class ContainerHandler extends BaseThingHandler {
      * Refresh the status of the container
      */
     private void startContainer() {
-        if (config.skipPull == false) {
+        if (getContainerConfig().skipPull == false) {
             withDockerClient(client -> {
                 client.pull(getImageLabel(), dockerProgressHandler);
             });
@@ -392,22 +408,34 @@ public class ContainerHandler extends BaseThingHandler {
             logger.debug("Started container {} with ID {}", getImageLabel(), containerID);
             updateStatus(ThingStatus.ONLINE);
         });
-        ;
+
+        logExecutor.ifPresent(executor -> executor.shutdownNow());
+        logExecutor = Optional.of(createLogExecutor());
         attachContainer();
         refreshStatus();
+
+        // Reset refresh job
+        refreshJob.ifPresent(job -> job.cancel(true));
+        this.refreshJob = Optional.of(createRefreshJob());
+    }
+
+    private ScheduledFuture<?> createRefreshJob() {
+        return scheduler.scheduleWithFixedDelay(() -> {
+            refreshStatus();
+        }, hashCode() % CONTAINER_REFRESH_INTERVAL, CONTAINER_REFRESH_INTERVAL, TimeUnit.SECONDS);
     }
 
     /**
      * Attach STDOUT/STDERR to a logger
      */
     private void attachContainer() {
-        logExecutor.execute(() -> {
+        logExecutor.ifPresent(executor -> executor.execute(() -> {
             withDockerClient(client -> {
                 try {
                     LogStream stream = client.attachContainer(containerID.get(), AttachParameter.STDOUT,
                             AttachParameter.STDERR, AttachParameter.STREAM);
-                    stream.attach(new LoggingOutputStream(Level.INFO, getThing()),
-                            new LoggingOutputStream(Level.ERROR, getThing()));
+                    stream.attach(new LoggingOutputStream(Level.INFO, getThing(), logRegex),
+                            new LoggingOutputStream(Level.ERROR, getThing(), logRegex));
                 } catch (IOException e) {
                     logger.error("Error reading streams from docker client", e);
                 } catch (InterruptedException e) {
@@ -415,6 +443,6 @@ public class ContainerHandler extends BaseThingHandler {
                 }
 
             });
-        });
+        }));
     }
 }

@@ -40,12 +40,15 @@ public class ContainerConfiguration {
 
     public String mqttClientID;
 
+    public String logRegex;
+
     public List<String> getCommandList() {
         Gson gson = new Gson();
         String[] commands = gson.fromJson(cmd, String[].class);
         return Arrays.asList(commands);
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getEnv(String polygotEnvPrefix, String thingUUID) {
         Gson gson = new Gson();
 
