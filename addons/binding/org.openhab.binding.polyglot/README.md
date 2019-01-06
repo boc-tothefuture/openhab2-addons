@@ -1,6 +1,6 @@
 # Polyglot Binding
 
-This binding manages the lifecycle of docker containers.  Polyglot can start and stop bindings when Openhab starts and stops or can run containers on-demand.  Additionally, the binding can provide environment variables to the docker container to support the development of bindings that communicate to Openhab using an out-of-band communications mechanism such as [the homie convention](https://homieiot.github.io/) over [MQTT](https://www.openhab.org/addons/bindings/mqtt.generic/#supported-things).  Utilizing the homie convention and the MQTT protocol, automation bindings can be written in any language and integrated into Openhab. 
+This binding manages the lifecycle of docker containers.  Polyglot can start and stop containers when Openhab starts and stops or can run containers on-demand.  Additionally, the binding can provide environment variables to the docker container to support the development of bindings that communicate to Openhab using communications mechanism such as [the homie convention](https://homieiot.github.io/) over [MQTT](https://www.openhab.org/addons/bindings/mqtt.generic/#supported-things).  Utilizing the homie convention and the MQTT protocol, automation bindings can be written in any language and integrated into Openhab. 
 
 
 ## Bridge Configuration
