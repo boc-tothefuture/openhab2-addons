@@ -49,6 +49,10 @@ public class JRubyScriptEngineConfiguration {
                     new OptionalConfigurationElement.Builder(OptionalConfigurationElement.Type.RUBY_ENVIRONMENT)
                             .mappedTo("GEM_HOME").build()),
 
+            Map.entry("ruby_lib",
+                    new OptionalConfigurationElement.Builder(OptionalConfigurationElement.Type.RUBY_ENVIRONMENT)
+                            .mappedTo("RUBY_LIB").build()),
+
             Map.entry("gems", new OptionalConfigurationElement.Builder(OptionalConfigurationElement.Type.GEM).build()));
 
     private final static Map<OptionalConfigurationElement.Type, List<OptionalConfigurationElement>> CONFIGURATION_TYPE_MAP = CONFIGURATION_PARAMETERS
